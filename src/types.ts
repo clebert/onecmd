@@ -10,7 +10,7 @@ export interface CompileCommand {
   readonly type: 'compile';
   readonly path: string;
 
-  getArgs?(options: CompileOptions): readonly string[];
+  getArgs?(options: CompileOptions): readonly (string | undefined)[];
 }
 
 export interface CompileOptions {
@@ -21,7 +21,7 @@ export interface FmtCommand {
   readonly type: 'fmt';
   readonly path: string;
 
-  getArgs?(options: FmtOptions): readonly string[];
+  getArgs?(options: FmtOptions): readonly (string | undefined)[];
 }
 
 export interface FmtOptions {
@@ -32,7 +32,7 @@ export interface LintCommand {
   readonly type: 'lint';
   readonly path: string;
 
-  getArgs?(options: LintOptions): readonly string[];
+  getArgs?(options: LintOptions): readonly (string | undefined)[];
 }
 
 export interface LintOptions {
@@ -43,7 +43,7 @@ export interface TestCommand {
   readonly type: 'test';
   readonly path: string;
 
-  getArgs?(options: TestOptions): readonly string[];
+  getArgs?(options: TestOptions): readonly (string | undefined)[];
 }
 
 export interface TestOptions {

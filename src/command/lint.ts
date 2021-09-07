@@ -1,5 +1,6 @@
 import type {Argv} from 'yargs';
 import type {LintCommand, LintOptions} from '../types';
+import {isString} from '../util/is-string';
 import {spawn} from '../util/spawn';
 
 export async function lint(
@@ -8,7 +9,9 @@ export async function lint(
 ): Promise<void> {
   if (isLintOptions(options)) {
     await Promise.all(
-      commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
+      commands.map(async ({path, getArgs}) =>
+        spawn(path, getArgs?.(options).filter(isString))
+      )
     );
   }
 }
