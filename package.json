@@ -21,15 +21,15 @@
   "scripts": {
     "preci": "run-s setup",
     "ci": "run-p compile fmt:check lint test",
-    "compile": "tscmd compile --output cjs",
+    "compile": "onecmd compile",
     "postcompile": "chmod +x lib/cjs/bin.js",
-    "fmt": "tscmd fmt",
-    "fmt:check": "tscmd fmt --check",
-    "lint": "tscmd lint",
+    "fmt": "onecmd fmt",
+    "fmt:check": "onecmd fmt --check",
+    "lint": "onecmd lint",
     "release": "npm version",
     "postrelease": "git push --follow-tags",
-    "setup": "tscmd setup --arch node --dist package",
-    "test": "tscmd test --coverage"
+    "setup": "onecmd setup",
+    "test": "onecmd test"
   },
   "dependencies": {
     "compose-function": "^3.0.3",
@@ -38,8 +38,9 @@
     "yargs": "^17.1.1"
   },
   "devDependencies": {
-    "@clebert/tscmd": "^0.2.0",
+    "@onecmd/standard-plugins": "^0.1.0",
     "@types/compose-function": "^0.0.30",
+    "@types/jest": "^27.0.1",
     "@types/js-yaml": "^4.0.3",
     "@types/mkdirp": "^1.0.2",
     "@types/node": "^16.7.13",
