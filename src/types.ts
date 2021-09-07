@@ -57,7 +57,7 @@ export type Source =
       readonly versioned?: boolean;
     }
   | {
-      readonly type: 'json';
+      readonly type: 'json' | 'yaml';
       readonly path: string;
       readonly versioned?: boolean;
 
@@ -82,7 +82,7 @@ export type Dependency =
       readonly required: true;
     }
   | {
-      readonly type: 'json';
+      readonly type: 'json' | 'yaml';
       readonly path: string;
       readonly required?: boolean;
 

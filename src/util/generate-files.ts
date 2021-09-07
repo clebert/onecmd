@@ -1,5 +1,6 @@
 import {normalize} from 'path';
 import type {Dependency, Source} from '../types';
+import {serialize} from './serialize';
 
 export interface File {
   readonly filename: string;
@@ -48,42 +49,7 @@ export async function generateFiles(
       }
     }
 
-    if (source.type === 'json') {
-      let input = await source.generate(otherSources);
-
-      for (const dependency of dependencies) {
-        if (dependency.path === source.path && dependency.type !== 'any') {
-          if (dependency.type === 'text') {
-            throw new Error(
-              `Dependency "${dependency.path}" should be of type "json" instead of "text".`
-            );
-          }
-
-          input = await dependency.generate(input, otherSources);
-        }
-      }
-
-      files.push({
-        filename: source.path,
-        data: JSON.stringify(input, null, 2) + '\n',
-      });
-    } else if (source.type === 'text') {
-      let input = await source.generate(otherSources);
-
-      for (const dependency of dependencies) {
-        if (dependency.path === source.path && dependency.type !== 'any') {
-          if (dependency.type === 'json') {
-            throw new Error(
-              `Dependency "${dependency.path}" should be of type "text" instead of "json".`
-            );
-          }
-
-          input = await dependency.generate(input, otherSources);
-        }
-      }
-
-      files.push({filename: source.path, data: input.join('\n').trim() + '\n'});
-    } else {
+    if (source.type === 'artifact') {
       for (const dependency of dependencies) {
         if (dependency.path === source.path && dependency.type !== 'any') {
           throw new Error(
@@ -91,6 +57,22 @@ export async function generateFiles(
           );
         }
       }
+    } else {
+      let input: any = await source.generate(otherSources);
+
+      for (const dependency of dependencies) {
+        if (dependency.path === source.path && dependency.type !== 'any') {
+          if (dependency.type !== source.type) {
+            throw new Error(
+              `Dependency "${dependency.path}" should be of type "${source.type}" instead of "${dependency.type}".`
+            );
+          }
+
+          input = await dependency.generate(input, otherSources);
+        }
+      }
+
+      files.push({filename: source.path, data: serialize(source.type, input)});
     }
   }
 
