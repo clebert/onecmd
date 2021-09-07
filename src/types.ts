@@ -1,7 +1,7 @@
 export interface Plugin {
-  readonly commands?: readonly Command[];
-  readonly sources?: readonly Source[];
-  readonly dependencies?: readonly Dependency[];
+  readonly commands?: readonly (Command | undefined)[];
+  readonly sources?: readonly (Source | undefined)[];
+  readonly dependencies?: readonly (Dependency | undefined)[];
 }
 
 export type Command = CompileCommand | FmtCommand | LintCommand | TestCommand;

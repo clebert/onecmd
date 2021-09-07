@@ -16,6 +16,7 @@ import type {
   LintCommand,
   TestCommand,
 } from './types';
+import {isDefined} from './util/is-defined';
 import {loadPlugins} from './util/load-plugins';
 
 (async () => {
@@ -41,9 +42,9 @@ import {loadPlugins} from './util/load-plugins';
   const dependencies: Dependency[] = [];
 
   for (const plugin of loadPlugins('./onecmd.js')) {
-    commands.push(...(plugin.commands ?? []));
-    sources.push(...(plugin.sources ?? []));
-    dependencies.push(...(plugin.dependencies ?? []));
+    commands.push(...(plugin.commands ?? []).filter(isDefined));
+    sources.push(...(plugin.sources ?? []).filter(isDefined));
+    dependencies.push(...(plugin.dependencies ?? []).filter(isDefined));
   }
 
   await setup(sources, dependencies, options);

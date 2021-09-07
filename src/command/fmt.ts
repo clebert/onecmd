@@ -1,6 +1,5 @@
 import type {Argv} from 'yargs';
 import type {FmtCommand, FmtOptions} from '../types';
-import {isString} from '../util/is-string';
 import {spawn} from '../util/spawn';
 
 export async function fmt(
@@ -9,9 +8,7 @@ export async function fmt(
 ): Promise<void> {
   if (isFmtOptions(options)) {
     await Promise.all(
-      commands.map(async ({path, getArgs}) =>
-        spawn(path, getArgs?.(options).filter(isString))
-      )
+      commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
     );
   }
 }

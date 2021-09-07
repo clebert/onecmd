@@ -1,6 +1,5 @@
 import type {Argv} from 'yargs';
 import type {TestCommand, TestOptions} from '../types';
-import {isString} from '../util/is-string';
 import {spawn} from '../util/spawn';
 
 export async function test(
@@ -9,9 +8,7 @@ export async function test(
 ): Promise<void> {
   if (isTestOptions(options)) {
     await Promise.all(
-      commands.map(async ({path, getArgs}) =>
-        spawn(path, getArgs?.(options).filter(isString))
-      )
+      commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
     );
   }
 }
