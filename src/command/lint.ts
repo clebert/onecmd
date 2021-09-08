@@ -10,6 +10,10 @@ export async function lint(
   options: {readonly _: unknown[]}
 ): Promise<void> {
   if (isOptions<LintOptions>(commandName)(options)) {
+    if (commands.length === 0) {
+      throw new Error('There are no commands for linting.');
+    }
+
     await Promise.all(
       commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
     );

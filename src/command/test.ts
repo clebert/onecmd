@@ -10,6 +10,10 @@ export async function test(
   options: {readonly _: unknown[]}
 ): Promise<void> {
   if (isOptions<TestOptions>(commandName)(options)) {
+    if (commands.length === 0) {
+      throw new Error('There are no commands for testing.');
+    }
+
     await Promise.all(
       commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
     );

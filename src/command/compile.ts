@@ -10,6 +10,10 @@ export async function compile(
   options: {readonly _: unknown[]}
 ): Promise<void> {
   if (isOptions<CompileOptions>(commandName)(options)) {
+    if (commands.length === 0) {
+      throw new Error('There are no commands for compiling.');
+    }
+
     await Promise.all(
       commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
     );

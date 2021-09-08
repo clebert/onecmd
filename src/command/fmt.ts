@@ -10,6 +10,10 @@ export async function fmt(
   options: {readonly _: unknown[]}
 ): Promise<void> {
   if (isOptions<FmtOptions>(commandName)(options)) {
+    if (commands.length === 0) {
+      throw new Error('There are no commands for formatting.');
+    }
+
     await Promise.all(
       commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
     );
