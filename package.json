@@ -37,9 +37,8 @@
     "yargs": "^17.1.1"
   },
   "devDependencies": {
-    "@onecmd/standard-plugins": "^0.2.0",
+    "@onecmd/standard-plugins": "^0.3.2",
     "@types/compose-function": "^0.0.30",
-    "@types/jest": "^27.0.1",
     "@types/mkdirp": "^1.0.2",
     "@types/node": "^16.7.13",
     "@types/yargs": "^17.0.2",
