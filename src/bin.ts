@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import {resolve} from 'path';
 import compose from 'compose-function';
 import yargs from 'yargs';
 import {compile} from './command/compile';
@@ -16,8 +17,8 @@ import type {
   LintCommand,
   TestCommand,
 } from './types';
+import {isCommand} from './util/is-command';
 import {isDefined} from './util/is-defined';
-import {loadPlugins} from './util/load-plugins';
 
 (async () => {
   const options = compose(
@@ -41,17 +42,17 @@ import {loadPlugins} from './util/load-plugins';
   const sources: Source[] = [];
   const dependencies: Dependency[] = [];
 
-  for (const plugin of loadPlugins('./onecmd.js')) {
+  for (const plugin of require(resolve('./onecmd.js'))) {
     commands.push(...(plugin.commands ?? []).filter(isDefined));
     sources.push(...(plugin.sources ?? []).filter(isDefined));
     dependencies.push(...(plugin.dependencies ?? []).filter(isDefined));
   }
 
   await setup(sources, dependencies, options);
-  await compile(commands.filter(isCompileCommand), options);
-  await fmt(commands.filter(isFmtCommand), options);
-  await lint(commands.filter(isLintCommand), options);
-  await test(commands.filter(isTestCommand), options);
+  await compile(commands.filter(isCommand<CompileCommand>('compile')), options);
+  await fmt(commands.filter(isCommand<FmtCommand>('fmt')), options);
+  await lint(commands.filter(isCommand<LintCommand>('lint')), options);
+  await test(commands.filter(isCommand<TestCommand>('test')), options);
 })().catch((error) => {
   if (error instanceof Error && error.message) {
     console.error(error.message);
@@ -59,18 +60,3 @@ import {loadPlugins} from './util/load-plugins';
 
   process.exit(1);
 });
-
-function isCompileCommand(command: Command): command is CompileCommand {
-  return command.type === 'compile';
-}
-
-function isFmtCommand(command: Command): command is FmtCommand {
-  return command.type === 'fmt';
-}
-function isLintCommand(command: Command): command is LintCommand {
-  return command.type === 'lint';
-}
-
-function isTestCommand(command: Command): command is TestCommand {
-  return command.type === 'test';
-}

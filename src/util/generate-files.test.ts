@@ -1,125 +1,122 @@
 import {generateFiles} from './generate-files';
-import {serialize} from './serialize';
 
 const any = {type: 'any', path: './a', required: true} as const;
-const artifact = {type: 'artifact', path: './a'} as const;
-const generate = async () => Promise.resolve([]);
-const json = {type: 'json', path: './a', generate} as const;
-const yaml = {type: 'yaml', path: './a', generate} as const;
-const text = {type: 'text', path: './a', generate} as const;
+const unknown = {type: 'unknown', path: './a'} as const;
+
+const object = {
+  type: 'object',
+  path: 'a',
+  required: true,
+  generate: jest.fn(),
+  serialize: jest.fn(),
+} as const;
+
+const string = {
+  type: 'string',
+  path: './a',
+  required: true,
+  generate: jest.fn(),
+  serialize: jest.fn(),
+} as const;
 
 describe('generateFiles()', () => {
-  test('several sources and dependencies', async () => {
-    const b1 = jest.fn(async () => Promise.resolve(['b1']));
-    const b2 = jest.fn(async (input) => Promise.resolve([...input, 'b2']));
-    const c1 = jest.fn(async () => Promise.resolve(['c1']));
-    const c2 = jest.fn(async (input) => Promise.resolve([...input, 'c2']));
-    const d1 = jest.fn(async () => Promise.resolve(['d1']));
-    const d2 = jest.fn(async (input) => Promise.resolve([...input, 'd2']));
-    const e2 = jest.fn(async (input) => Promise.resolve([...input, 'e2']));
+  test('several sources and dependencies', () => {
+    const generateA1 = jest.fn(() => ['a1']);
+    const generateA2 = jest.fn((input: string[]) => [...input, 'a2']);
+    const generateB1 = jest.fn(() => 'b1');
+    const generateB2 = jest.fn((input: string) => input + 'b2');
+    const generateD = jest.fn();
 
-    const files = await generateFiles(
+    const files = generateFiles(
       [
-        {type: 'artifact', path: './a', versioned: true},
-        {type: 'json', path: './b', generate: b1},
-        {type: 'yaml', path: './c', versioned: true, generate: c1},
-        {type: 'text', path: './d', generate: d1},
+        {
+          type: 'object',
+          path: './a',
+          versioned: true,
+          generate: generateA1,
+          serialize: (input) => JSON.stringify(input).toUpperCase(),
+        },
+        {
+          type: 'string',
+          path: 'b',
+          generate: generateB1,
+          serialize: (input) => input.toUpperCase(),
+        },
+        {
+          type: 'unknown',
+          path: './c',
+          versioned: true,
+        },
       ],
       [
         {type: 'any', path: './a', required: true},
         {type: 'any', path: './b', required: true},
         {type: 'any', path: './c', required: true},
-        {type: 'any', path: './d', required: true},
-        {type: 'json', path: './b', generate: b2, required: true},
-        {type: 'json', path: './e', generate: e2},
-        {type: 'yaml', path: './c', generate: c2, required: true},
-        {type: 'yaml', path: './e', generate: e2},
-        {type: 'text', path: './d', generate: d2, required: true},
-        {type: 'text', path: './e', generate: e2},
+        {type: 'object', path: 'a', required: true, generate: generateA2},
+        {type: 'object', path: './d', generate: generateD},
+        {type: 'string', path: './b', required: true, generate: generateB2},
+        {type: 'string', path: './d', generate: generateD},
       ]
     );
 
     expect(files).toEqual([
-      {filename: 'b', data: serialize('json', ['b1', 'b2'])},
-      {filename: 'c', data: serialize('yaml', ['c1', 'c2'])},
-      {filename: 'd', data: serialize('text', ['d1', 'd2'])},
+      {filename: 'a', data: '["A1","A2"]'},
+      {filename: 'b', data: 'B1B2'},
     ]);
 
     const i = {versioned: false};
     const v = {versioned: true};
 
-    expect(b1.mock.calls).toEqual([[{a: v, c: v, d: i}]]);
-    expect(b2.mock.calls).toEqual([[['b1'], {a: v, c: v, d: i}]]);
-    expect(c1.mock.calls).toEqual([[{a: v, b: i, d: i}]]);
-    expect(c2.mock.calls).toEqual([[['c1'], {a: v, b: i, d: i}]]);
-    expect(d1.mock.calls).toEqual([[{a: v, b: i, c: v}]]);
-    expect(d2.mock.calls).toEqual([[['d1'], {a: v, b: i, c: v}]]);
-    expect(e2.mock.calls).toEqual([]);
+    expect(generateA1.mock.calls).toEqual([[{b: i, c: v}]]);
+    expect(generateA2.mock.calls).toEqual([[['a1'], {b: i, c: v}]]);
+    expect(generateB1.mock.calls).toEqual([[{a: v, c: v}]]);
+    expect(generateB2.mock.calls).toEqual([['b1', {a: v, c: v}]]);
+    expect(generateD.mock.calls).toEqual([]);
   });
 
-  test('duplicate sources', async () => {
-    for (const source1 of [artifact, json, text]) {
-      for (const source2 of [artifact, json, text]) {
-        await expect(generateFiles([source1, source2], [])).rejects.toEqual(
+  test('duplicate sources', () => {
+    for (const source1 of [object, string, unknown]) {
+      for (const source2 of [object, string, unknown]) {
+        expect(() => generateFiles([source1, source2], [])).toThrow(
           new Error('Source "a" already exists.')
         );
       }
     }
   });
 
-  test('non-existing dependencies', async () => {
-    await expect(generateFiles([], [any])).rejects.toEqual(
+  test('non-existing dependencies', () => {
+    expect(() => generateFiles([], [any])).toThrow(
       new Error('Dependency "a" does not exist.')
     );
 
-    await expect(
-      generateFiles([], [{...json, required: true}])
-    ).rejects.toEqual(new Error('Dependency "a" does not exist.'));
+    expect(() => generateFiles([], [object])).toThrow(
+      new Error('Dependency "a" does not exist.')
+    );
 
-    await expect(
-      generateFiles([], [{...yaml, required: true}])
-    ).rejects.toEqual(new Error('Dependency "a" does not exist.'));
-
-    await expect(
-      generateFiles([], [{...text, required: true}])
-    ).rejects.toEqual(new Error('Dependency "a" does not exist.'));
+    expect(() => generateFiles([], [string])).toThrow(
+      new Error('Dependency "a" does not exist.')
+    );
   });
 
-  test('incompatible dependencies', async () => {
-    await expect(generateFiles([artifact], [json])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "any" instead of "json".')
+  test('incompatible dependencies', () => {
+    expect(() => generateFiles([unknown], [object])).toThrow(
+      new Error('Dependency "a" should be of type "any" instead of "object".')
     );
 
-    await expect(generateFiles([artifact], [yaml])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "any" instead of "yaml".')
+    expect(() => generateFiles([unknown], [string])).toThrow(
+      new Error('Dependency "a" should be of type "any" instead of "string".')
     );
 
-    await expect(generateFiles([artifact], [text])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "any" instead of "text".')
+    expect(() => generateFiles([object], [string])).toThrow(
+      new Error(
+        'Dependency "a" should be of type "object" instead of "string".'
+      )
     );
 
-    await expect(generateFiles([json], [yaml])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "json" instead of "yaml".')
-    );
-
-    await expect(generateFiles([json], [text])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "json" instead of "text".')
-    );
-
-    await expect(generateFiles([yaml], [json])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "yaml" instead of "json".')
-    );
-
-    await expect(generateFiles([yaml], [text])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "yaml" instead of "text".')
-    );
-
-    await expect(generateFiles([text], [json])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "text" instead of "json".')
-    );
-
-    await expect(generateFiles([text], [yaml])).rejects.toEqual(
-      new Error('Dependency "a" should be of type "text" instead of "yaml".')
+    expect(() => generateFiles([string], [object])).toThrow(
+      new Error(
+        'Dependency "a" should be of type "string" instead of "object".'
+      )
     );
   });
 });

@@ -52,23 +52,25 @@ export interface TestOptions {
 
 export type Source =
   | {
-      readonly type: 'artifact';
-      readonly path: string;
-      readonly versioned?: boolean;
-    }
-  | {
-      readonly type: 'json' | 'yaml';
+      readonly type: 'object';
       readonly path: string;
       readonly versioned?: boolean;
 
-      generate(otherSources: Sources): Promise<object>;
+      generate(otherSources: Sources): object;
+      serialize(input: object): string;
     }
   | {
-      readonly type: 'text';
+      readonly type: 'string';
       readonly path: string;
       readonly versioned?: boolean;
 
-      generate(otherSources: Sources): Promise<readonly string[]>;
+      generate(otherSources: Sources): string;
+      serialize(input: string): string;
+    }
+  | {
+      readonly type: 'unknown';
+      readonly path: string;
+      readonly versioned?: boolean;
     };
 
 export interface Sources {
@@ -82,19 +84,16 @@ export type Dependency =
       readonly required: true;
     }
   | {
-      readonly type: 'json' | 'yaml';
+      readonly type: 'object';
       readonly path: string;
       readonly required?: boolean;
 
-      generate(input: object, otherSources: Sources): Promise<object>;
+      generate(input: object, otherSources: Sources): object;
     }
   | {
-      readonly type: 'text';
+      readonly type: 'string';
       readonly path: string;
       readonly required?: boolean;
 
-      generate(
-        input: readonly string[],
-        otherSources: Sources
-      ): Promise<readonly string[]>;
+      generate(input: string, otherSources: Sources): string;
     };

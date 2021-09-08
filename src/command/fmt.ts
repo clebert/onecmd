@@ -1,31 +1,28 @@
 import type {Argv} from 'yargs';
 import type {FmtCommand, FmtOptions} from '../types';
+import {isOptions} from '../util/is-options';
 import {spawn} from '../util/spawn';
+
+const commandName = 'fmt';
 
 export async function fmt(
   commands: readonly FmtCommand[],
   options: {readonly _: unknown[]}
 ): Promise<void> {
-  if (isFmtOptions(options)) {
+  if (isOptions<FmtOptions>(commandName)(options)) {
     await Promise.all(
       commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
     );
   }
 }
 
-function isFmtOptions(options: {
-  readonly _: unknown[];
-}): options is FmtOptions & {readonly _: ['fmt']} {
-  return options._[0] === 'fmt';
-}
-
 fmt.describe = (argv: Argv) =>
-  argv.command('fmt [options]', '', (command) =>
+  argv.command(`${commandName} [options]`, '', (command) =>
     command
       .describe('check', '')
       .boolean('check')
       .default('check', false)
 
-      .example('$0 fmt', '')
-      .example('$0 fmt --check', '')
+      .example(`$0 ${commandName}`, '')
+      .example(`$0 ${commandName} --check`, '')
   );

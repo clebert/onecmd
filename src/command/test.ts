@@ -1,31 +1,28 @@
 import type {Argv} from 'yargs';
 import type {TestCommand, TestOptions} from '../types';
+import {isOptions} from '../util/is-options';
 import {spawn} from '../util/spawn';
+
+const commandName = 'test';
 
 export async function test(
   commands: readonly TestCommand[],
   options: {readonly _: unknown[]}
 ): Promise<void> {
-  if (isTestOptions(options)) {
+  if (isOptions<TestOptions>(commandName)(options)) {
     await Promise.all(
       commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
     );
   }
 }
 
-function isTestOptions(options: {
-  readonly _: unknown[];
-}): options is TestOptions & {readonly _: ['test']} {
-  return options._[0] === 'test';
-}
-
 test.describe = (argv: Argv) =>
-  argv.command('test [options]', '', (command) =>
+  argv.command(`${commandName} [options]`, '', (command) =>
     command
       .describe('watch', '')
       .boolean('watch')
       .default('watch', false)
 
-      .example('$0 test', '')
-      .example('$0 test --watch', '')
+      .example(`$0 ${commandName}`, '')
+      .example(`$0 ${commandName} --watch`, '')
   );

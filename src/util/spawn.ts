@@ -19,9 +19,7 @@ export async function spawn(
       } else {
         reject(
           new Error(
-            `The process ${JSON.stringify(
-              normalize(path)
-            )} terminated with the ${
+            `Process ${JSON.stringify(normalize(path))} has terminated with ${
               code ? `code ${code}` : `signal ${signal}`
             }.`
           )
