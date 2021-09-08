@@ -1,6 +1,6 @@
 {
   "name": "onecmd",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "One command to compile, fmt, lint, and test them all.",
   "bugs": {
     "url": "https://github.com/clebert/onecmd/issues"
