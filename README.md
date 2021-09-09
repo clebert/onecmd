@@ -122,7 +122,7 @@ module.exports = [
       {
         type: 'string',
         path: 'path/to/file.txt',
-        versionable: true,
+        versionable: true, // The file should be versioned and visible in the editor.
         generate: (otherSources) => 'foo',
         serialize: (content) => content,
       },
@@ -135,7 +135,7 @@ module.exports = [
       {
         type: 'unknown',
         path: 'path/to/file',
-        editable: true,
+        editable: true, // The file should be visible in the editor.
       },
     ],
     dependencies: [
