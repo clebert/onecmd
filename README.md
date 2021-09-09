@@ -122,7 +122,7 @@ module.exports = [
       {
         type: 'string',
         path: 'path/to/file.txt',
-        versioned: true,
+        versionable: true,
         generate: (otherSources) => 'foo',
         serialize: (content) => content,
       },
@@ -134,7 +134,8 @@ module.exports = [
       },
       {
         type: 'unknown',
-        path: 'path/to/build.artifact',
+        path: 'path/to/file',
+        editable: true,
       },
     ],
     dependencies: [
@@ -151,7 +152,7 @@ module.exports = [
       },
       {
         type: 'any',
-        path: 'path/to/build.artifact',
+        path: 'path/to/file',
         required: true,
       },
     ],

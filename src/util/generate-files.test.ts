@@ -25,14 +25,14 @@ describe('generateFiles()', () => {
     const generateA2 = jest.fn((content: string[]) => [...content, 'a2']);
     const generateB1 = jest.fn(() => 'b1');
     const generateB2 = jest.fn((content: string) => content + 'b2');
-    const generateD = jest.fn();
+    const generateE = jest.fn();
 
     const files = generateFiles(
       [
         {
           type: 'object',
           path: './a',
-          versioned: true,
+          versionable: true,
           generate: generateA1,
           serialize: (content) => JSON.stringify(content).toUpperCase(),
         },
@@ -42,20 +42,17 @@ describe('generateFiles()', () => {
           generate: generateB1,
           serialize: (content) => content.toUpperCase(),
         },
-        {
-          type: 'unknown',
-          path: './c',
-          versioned: true,
-        },
+        {type: 'unknown', path: './c', versionable: true},
+        {type: 'unknown', path: './d', editable: true},
       ],
       [
         {type: 'any', path: './a', required: true},
         {type: 'any', path: './b', required: true},
         {type: 'any', path: './c', required: true},
         {type: 'object', path: 'a', required: true, generate: generateA2},
-        {type: 'object', path: './d', generate: generateD},
+        {type: 'object', path: './e', generate: generateE},
         {type: 'string', path: './b', required: true, generate: generateB2},
-        {type: 'string', path: './d', generate: generateD},
+        {type: 'string', path: './e', generate: generateE},
       ]
     );
 
@@ -64,14 +61,49 @@ describe('generateFiles()', () => {
       {filename: 'b', data: 'B1B2'},
     ]);
 
-    const i = {versioned: false};
-    const v = {versioned: true};
+    expect(generateA1.mock.calls).toEqual([
+      [
+        {
+          b: {editable: false, versionable: false},
+          c: {editable: false, versionable: true},
+          d: {editable: true, versionable: false},
+        },
+      ],
+    ]);
 
-    expect(generateA1.mock.calls).toEqual([[{b: i, c: v}]]);
-    expect(generateA2.mock.calls).toEqual([[['a1'], {b: i, c: v}]]);
-    expect(generateB1.mock.calls).toEqual([[{a: v, c: v}]]);
-    expect(generateB2.mock.calls).toEqual([['b1', {a: v, c: v}]]);
-    expect(generateD.mock.calls).toEqual([]);
+    expect(generateA2.mock.calls).toEqual([
+      [
+        ['a1'],
+        {
+          b: {editable: false, versionable: false},
+          c: {editable: false, versionable: true},
+          d: {editable: true, versionable: false},
+        },
+      ],
+    ]);
+
+    expect(generateB1.mock.calls).toEqual([
+      [
+        {
+          a: {editable: false, versionable: true},
+          c: {editable: false, versionable: true},
+          d: {editable: true, versionable: false},
+        },
+      ],
+    ]);
+
+    expect(generateB2.mock.calls).toEqual([
+      [
+        'b1',
+        {
+          a: {editable: false, versionable: true},
+          c: {editable: false, versionable: true},
+          d: {editable: true, versionable: false},
+        },
+      ],
+    ]);
+
+    expect(generateE.mock.calls).toEqual([]);
   });
 
   test('duplicate sources', () => {

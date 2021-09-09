@@ -38,48 +38,42 @@ export function generateFiles(
   }
 
   for (const source of sources) {
-    const otherSources: Record<string, {versioned: boolean}> = {};
+    const otherSources: Record<
+      string,
+      {editable: boolean; versionable: boolean}
+    > = {};
 
     for (const otherSource of sources) {
       if (otherSource.path !== source.path) {
         otherSources[otherSource.path] = {
-          versioned: otherSource.versioned ?? false,
+          editable:
+            (otherSource.type === 'unknown' && otherSource.editable) ?? false,
+
+          versionable: otherSource.versionable ?? false,
         };
       }
     }
 
-    if (source.type === 'object') {
+    if (source.type !== 'unknown') {
       let content = source.generate(otherSources);
 
       for (const dependency of dependencies) {
         if (dependency.path === source.path && dependency.type !== 'any') {
-          if (dependency.type === 'string') {
+          if (dependency.type !== source.type) {
             throw new Error(
-              `Dependency "${dependency.path}" should be of type "object" instead of "string".`
+              `Dependency "${dependency.path}" should be of type "${source.type}" instead of "${dependency.type}".`
             );
           }
 
+          // @ts-expect-error
           content = dependency.generate(content, otherSources);
         }
       }
 
-      files.push({filename: source.path, data: source.serialize(content)});
-    } else if (source.type === 'string') {
-      let content = source.generate(otherSources);
+      // @ts-expect-error
+      const data = source.serialize(content);
 
-      for (const dependency of dependencies) {
-        if (dependency.path === source.path && dependency.type !== 'any') {
-          if (dependency.type === 'object') {
-            throw new Error(
-              `Dependency "${dependency.path}" should be of type "string" instead of "object".`
-            );
-          }
-
-          content = dependency.generate(content, otherSources);
-        }
-      }
-
-      files.push({filename: source.path, data: source.serialize(content)});
+      files.push({filename: source.path, data});
     } else {
       for (const dependency of dependencies) {
         if (dependency.path === source.path && dependency.type !== 'any') {

@@ -55,7 +55,7 @@ export type Source = ObjectSource | StringSource | UnknownSource;
 export interface ObjectSource {
   readonly type: 'object';
   readonly path: string;
-  readonly versioned?: boolean;
+  readonly versionable?: boolean;
 
   generate(otherSources: Sources): object;
   serialize(content: object): string;
@@ -64,7 +64,7 @@ export interface ObjectSource {
 export interface StringSource {
   readonly type: 'string';
   readonly path: string;
-  readonly versioned?: boolean;
+  readonly versionable?: boolean;
 
   generate(otherSources: Sources): string;
   serialize(content: string): string;
@@ -73,11 +73,15 @@ export interface StringSource {
 export interface UnknownSource {
   readonly type: 'unknown';
   readonly path: string;
-  readonly versioned?: boolean;
+  readonly editable?: boolean;
+  readonly versionable?: boolean;
 }
 
 export interface Sources {
-  readonly [path: string]: {readonly versioned: boolean};
+  readonly [path: string]: {
+    readonly editable: boolean;
+    readonly versionable: boolean;
+  };
 }
 
 export type Dependency = AnyDependency | ObjectDependency | StringDependency;
