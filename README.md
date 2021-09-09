@@ -27,11 +27,11 @@ format, lint, and test TypeScript or JavaScript projects.
 ## Rationale
 
 In many projects, the tools used and the associated configuration files are
-often identical, and appropriate conventions could be derived to set up such
-projects in a uniform way. The jumble of configuration files distracts from the
-actual content, and they are always tedious to create and keep up to date.
-Furthermore, tools are often interrelated and require mutual adjustments in
-their respective configurations.
+often identical. The jumble of configuration files distracts from the actual
+content, and they are always tedious to create and keep up to date. Furthermore,
+tools are often interrelated and require mutual adjustments in their respective
+configurations. Standard conventions could be derived to set up such projects in
+a uniform way.
 
 Project templates are of little help, as they can often only be applied
 initially and are difficult to adapt to the dynamic requirements of different
@@ -43,11 +43,11 @@ generically for all projects.
 **onecmd** serves as a generic tool for dynamic management of projects and is
 fully customizable via user-defined plugins in the
 [`onecmd.js`](https://github.com/clebert/onecmd/blob/main/onecmd.js) file. A
-plugin defines commands executed while compiling, formatting, linting, or
-testing and source files and dependencies on other source files to be generated
+plugin specifies commands executed while compiling, formatting, linting,
+testing, and source files and dependencies on other source files generated
 during setup.
 
-Only a single plugin can own a particular file, define its initial content,
+Only a single plugin can own a particular file, specify its initial content,
 control its serialization, and determine whether or not the file is subject to
 version control. Other plugins can declare this file as an optional or required
 dependency and manipulate it during setup.
@@ -91,7 +91,7 @@ module.exports = [
 
 ### Configuration
 
-Plugins are defined or assembled in the file `onecmd.js`:
+Define plugins in the file `onecmd.js`:
 
 ```js
 module.exports = [
