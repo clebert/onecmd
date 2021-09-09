@@ -34,7 +34,9 @@ import {isDefined} from './util/is-defined';
       .alias('h', 'help')
       .detectLocale(false)
       .demandCommand(1, 1)
-      .epilogue('One command to compile, fmt, lint, and test them all.')
+      .epilogue(
+        'One command to setup, compile, format, lint, and test them all.'
+      )
       .strict()
   ).argv as {readonly _: unknown[]};
 
