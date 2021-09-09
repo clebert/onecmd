@@ -124,13 +124,13 @@ module.exports = [
         path: 'path/to/file.txt',
         versioned: true,
         generate: (otherSources) => 'foo',
-        serialize: (input) => input,
+        serialize: (content) => content,
       },
       {
         type: 'object',
         path: 'path/to/file.json',
         generate: (otherSources) => ({foo: 'bar'}),
-        serialize: (input) => JSON.stringify(input),
+        serialize: (content) => JSON.stringify(content),
       },
       {
         type: 'unknown',
@@ -141,13 +141,13 @@ module.exports = [
       {
         type: 'string',
         path: 'path/to/file.txt',
-        generate: (input, otherSources) => input + 'bar',
+        generate: (content, otherSources) => content + 'bar',
       },
       {
         type: 'object',
         path: 'path/to/file.json',
         required: true,
-        generate: (input, otherSources) => ({...input, baz: 'qux'}),
+        generate: (content, otherSources) => ({...content, baz: 'qux'}),
       },
       {
         type: 'any',

@@ -1,9 +1,9 @@
 import {generateFiles} from './generate-files';
 
-const any = {type: 'any', path: './a', required: true} as const;
-const unknown = {type: 'unknown', path: './a'} as const;
+const anyFile = {type: 'any', path: './a', required: true} as const;
+const unknownFile = {type: 'unknown', path: './a'} as const;
 
-const object = {
+const objectFile = {
   type: 'object',
   path: 'a',
   required: true,
@@ -11,7 +11,7 @@ const object = {
   serialize: jest.fn(),
 } as const;
 
-const string = {
+const stringFile = {
   type: 'string',
   path: './a',
   required: true,
@@ -22,9 +22,9 @@ const string = {
 describe('generateFiles()', () => {
   test('several sources and dependencies', () => {
     const generateA1 = jest.fn(() => ['a1']);
-    const generateA2 = jest.fn((input: string[]) => [...input, 'a2']);
+    const generateA2 = jest.fn((content: string[]) => [...content, 'a2']);
     const generateB1 = jest.fn(() => 'b1');
-    const generateB2 = jest.fn((input: string) => input + 'b2');
+    const generateB2 = jest.fn((content: string) => content + 'b2');
     const generateD = jest.fn();
 
     const files = generateFiles(
@@ -34,13 +34,13 @@ describe('generateFiles()', () => {
           path: './a',
           versioned: true,
           generate: generateA1,
-          serialize: (input) => JSON.stringify(input).toUpperCase(),
+          serialize: (content) => JSON.stringify(content).toUpperCase(),
         },
         {
           type: 'string',
           path: 'b',
           generate: generateB1,
-          serialize: (input) => input.toUpperCase(),
+          serialize: (content) => content.toUpperCase(),
         },
         {
           type: 'unknown',
@@ -75,8 +75,8 @@ describe('generateFiles()', () => {
   });
 
   test('duplicate sources', () => {
-    for (const source1 of [object, string, unknown]) {
-      for (const source2 of [object, string, unknown]) {
+    for (const source1 of [objectFile, stringFile, unknownFile]) {
+      for (const source2 of [objectFile, stringFile, unknownFile]) {
         expect(() => generateFiles([source1, source2], [])).toThrow(
           new Error('Source "a" already exists.')
         );
@@ -85,35 +85,35 @@ describe('generateFiles()', () => {
   });
 
   test('non-existing dependencies', () => {
-    expect(() => generateFiles([], [any])).toThrow(
+    expect(() => generateFiles([], [anyFile])).toThrow(
       new Error('Dependency "a" does not exist.')
     );
 
-    expect(() => generateFiles([], [object])).toThrow(
+    expect(() => generateFiles([], [objectFile])).toThrow(
       new Error('Dependency "a" does not exist.')
     );
 
-    expect(() => generateFiles([], [string])).toThrow(
+    expect(() => generateFiles([], [stringFile])).toThrow(
       new Error('Dependency "a" does not exist.')
     );
   });
 
   test('incompatible dependencies', () => {
-    expect(() => generateFiles([unknown], [object])).toThrow(
+    expect(() => generateFiles([unknownFile], [objectFile])).toThrow(
       new Error('Dependency "a" should be of type "any" instead of "object".')
     );
 
-    expect(() => generateFiles([unknown], [string])).toThrow(
+    expect(() => generateFiles([unknownFile], [stringFile])).toThrow(
       new Error('Dependency "a" should be of type "any" instead of "string".')
     );
 
-    expect(() => generateFiles([object], [string])).toThrow(
+    expect(() => generateFiles([objectFile], [stringFile])).toThrow(
       new Error(
         'Dependency "a" should be of type "object" instead of "string".'
       )
     );
 
-    expect(() => generateFiles([string], [object])).toThrow(
+    expect(() => generateFiles([stringFile], [objectFile])).toThrow(
       new Error(
         'Dependency "a" should be of type "string" instead of "object".'
       )

@@ -49,7 +49,7 @@ export function generateFiles(
     }
 
     if (source.type === 'object') {
-      let input = source.generate(otherSources);
+      let content = source.generate(otherSources);
 
       for (const dependency of dependencies) {
         if (dependency.path === source.path && dependency.type !== 'any') {
@@ -59,13 +59,13 @@ export function generateFiles(
             );
           }
 
-          input = dependency.generate(input, otherSources);
+          content = dependency.generate(content, otherSources);
         }
       }
 
-      files.push({filename: source.path, data: source.serialize(input)});
+      files.push({filename: source.path, data: source.serialize(content)});
     } else if (source.type === 'string') {
-      let input: any = source.generate(otherSources);
+      let content = source.generate(otherSources);
 
       for (const dependency of dependencies) {
         if (dependency.path === source.path && dependency.type !== 'any') {
@@ -75,11 +75,11 @@ export function generateFiles(
             );
           }
 
-          input = dependency.generate(input, otherSources);
+          content = dependency.generate(content, otherSources);
         }
       }
 
-      files.push({filename: source.path, data: source.serialize(input)});
+      files.push({filename: source.path, data: source.serialize(content)});
     } else {
       for (const dependency of dependencies) {
         if (dependency.path === source.path && dependency.type !== 'any') {

@@ -50,50 +50,56 @@ export interface TestOptions {
   readonly watch: boolean;
 }
 
-export type Source =
-  | {
-      readonly type: 'object';
-      readonly path: string;
-      readonly versioned?: boolean;
+export type Source = ObjectSource | StringSource | UnknownSource;
 
-      generate(otherSources: Sources): object;
-      serialize(input: object): string;
-    }
-  | {
-      readonly type: 'string';
-      readonly path: string;
-      readonly versioned?: boolean;
+export interface ObjectSource {
+  readonly type: 'object';
+  readonly path: string;
+  readonly versioned?: boolean;
 
-      generate(otherSources: Sources): string;
-      serialize(input: string): string;
-    }
-  | {
-      readonly type: 'unknown';
-      readonly path: string;
-      readonly versioned?: boolean;
-    };
+  generate(otherSources: Sources): object;
+  serialize(content: object): string;
+}
+
+export interface StringSource {
+  readonly type: 'string';
+  readonly path: string;
+  readonly versioned?: boolean;
+
+  generate(otherSources: Sources): string;
+  serialize(content: string): string;
+}
+
+export interface UnknownSource {
+  readonly type: 'unknown';
+  readonly path: string;
+  readonly versioned?: boolean;
+}
 
 export interface Sources {
   readonly [path: string]: {readonly versioned: boolean};
 }
 
-export type Dependency =
-  | {
-      readonly type: 'any';
-      readonly path: string;
-      readonly required: true;
-    }
-  | {
-      readonly type: 'object';
-      readonly path: string;
-      readonly required?: boolean;
+export type Dependency = AnyDependency | ObjectDependency | StringDependency;
 
-      generate(input: object, otherSources: Sources): object;
-    }
-  | {
-      readonly type: 'string';
-      readonly path: string;
-      readonly required?: boolean;
+export interface AnyDependency {
+  readonly type: 'any';
+  readonly path: string;
+  readonly required: true;
+}
 
-      generate(input: string, otherSources: Sources): string;
-    };
+export interface ObjectDependency {
+  readonly type: 'object';
+  readonly path: string;
+  readonly required?: boolean;
+
+  generate(content: object, otherSources: Sources): object;
+}
+
+export interface StringDependency {
+  readonly type: 'string';
+  readonly path: string;
+  readonly required?: boolean;
+
+  generate(content: string, otherSources: Sources): string;
+}
