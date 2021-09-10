@@ -64,7 +64,8 @@ basis to allow easy and consistent management of projects together with
 
 ### Usage
 
-1. Install **onecmd**: `npm install onecmd --save-dev`
+1. Install the standard plugins:
+   `npm install @onecmd/standard-plugins --save-dev`
 2. Create a file named `onecmd.js`:
 
 ```js
@@ -91,7 +92,7 @@ module.exports = [
 
 ### Configuration
 
-Define plugins in the file `onecmd.js`:
+Define plugins in the `onecmd.js` file:
 
 ```js
 module.exports = [
