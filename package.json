@@ -1,6 +1,6 @@
 {
   "name": "onecmd",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "One command to setup, compile, format, lint, and test them all.",
   "bugs": {
     "url": "https://github.com/clebert/onecmd/issues"
