@@ -66,20 +66,23 @@ attempt is the package
 ```js
 // @ts-check
 
-const plugins = require('@onecmd/standard-plugins');
+const std = require('@onecmd/standard-plugins');
 
-module.exports = [
-  plugins.babel(),
-  plugins.editorconfig(),
-  plugins.eslint(),
-  plugins.git(),
-  plugins.jest({coverage: true}),
-  plugins.node('16'),
-  plugins.npm(),
-  plugins.prettier(),
-  plugins.typescript('node', 'package'),
-  plugins.vscode({showFilesInEditor: false}),
+/** @type {readonly import('onecmd').Plugin[]} */
+const plugins = [
+  std.babel(),
+  std.editorconfig(),
+  std.eslint(),
+  std.git(),
+  std.jest({coverage: true}),
+  std.node('16'),
+  std.npm(),
+  std.prettier(),
+  std.typescript('node', 'package'),
+  std.vscode({showFilesInEditor: false}),
 ];
+
+module.exports = plugins;
 ```
 
 3. Run: `onecmd setup`
