@@ -50,28 +50,20 @@ export interface TestOptions {
   readonly watch: boolean;
 }
 
-export type Source = ObjectSource | StringSource | UnknownSource;
+export type Source = ManagedSource<any> | UnmanagedSource;
 
-export interface ObjectSource {
-  readonly type: 'object';
+export interface ManagedSource<TContent> {
+  readonly type: 'managed';
   readonly path: string;
   readonly versionable?: boolean;
 
-  generate(otherSources: Sources): object;
-  serialize(content: object): string;
+  is(content: unknown): content is TContent;
+  create(otherSources: Sources): TContent;
+  serialize(content: TContent): string;
 }
 
-export interface StringSource {
-  readonly type: 'string';
-  readonly path: string;
-  readonly versionable?: boolean;
-
-  generate(otherSources: Sources): string;
-  serialize(content: string): string;
-}
-
-export interface UnknownSource {
-  readonly type: 'unknown';
+export interface UnmanagedSource {
+  readonly type: 'unmanaged';
   readonly path: string;
   readonly editable?: boolean;
   readonly versionable?: boolean;
@@ -84,7 +76,7 @@ export interface Sources {
   };
 }
 
-export type Dependency = AnyDependency | ObjectDependency | StringDependency;
+export type Dependency = AnyDependency | ManagedDependency<any>;
 
 export interface AnyDependency {
   readonly type: 'any';
@@ -92,18 +84,11 @@ export interface AnyDependency {
   readonly required: true;
 }
 
-export interface ObjectDependency {
-  readonly type: 'object';
+export interface ManagedDependency<TContent> {
+  readonly type: 'managed';
   readonly path: string;
   readonly required?: boolean;
 
-  generate(content: object, otherSources: Sources): object;
-}
-
-export interface StringDependency {
-  readonly type: 'string';
-  readonly path: string;
-  readonly required?: boolean;
-
-  generate(content: string, otherSources: Sources): string;
+  is(content: unknown): content is TContent;
+  update(content: TContent, otherSources: Sources): TContent;
 }

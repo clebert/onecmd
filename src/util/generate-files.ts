@@ -25,7 +25,7 @@ export function generateFiles(
 
   for (const source of sources) {
     if (sourcePaths.has(source.path)) {
-      throw new Error(`Source "${source.path}" already exists.`);
+      throw new Error(`File "${source.path}" already exists.`);
     }
 
     sourcePaths.add(source.path);
@@ -33,7 +33,7 @@ export function generateFiles(
 
   for (const dependency of dependencies) {
     if (!sourcePaths.has(dependency.path) && dependency.required) {
-      throw new Error(`Dependency "${dependency.path}" does not exist.`);
+      throw new Error(`Required file "${dependency.path}" does not exist.`);
     }
   }
 
@@ -47,39 +47,39 @@ export function generateFiles(
       if (otherSource.path !== source.path) {
         otherSources[otherSource.path] = {
           editable:
-            (otherSource.type === 'unknown' && otherSource.editable) ?? false,
+            (otherSource.type === 'unmanaged' && otherSource.editable) ?? false,
 
           versionable: otherSource.versionable ?? false,
         };
       }
     }
 
-    if (source.type !== 'unknown') {
-      let content = source.generate(otherSources);
+    if (source.type === 'managed') {
+      let content = source.create(otherSources);
 
       for (const dependency of dependencies) {
         if (dependency.path === source.path && dependency.type !== 'any') {
-          if (dependency.type !== source.type) {
+          if (!dependency.is(content)) {
             throw new Error(
-              `Dependency "${dependency.path}" should be of type "${source.type}" instead of "${dependency.type}".`
+              `Incompatible file "${source.path}" cannot be updated.`
             );
           }
 
-          // @ts-expect-error
-          content = dependency.generate(content, otherSources);
+          content = dependency.update(content, otherSources);
         }
       }
 
-      // @ts-expect-error
-      const data = source.serialize(content);
+      if (!source.is(content)) {
+        throw new Error(
+          `Malformed file "${source.path}" cannot be serialized.`
+        );
+      }
 
-      files.push({filename: source.path, data});
+      files.push({filename: source.path, data: source.serialize(content)});
     } else {
       for (const dependency of dependencies) {
         if (dependency.path === source.path && dependency.type !== 'any') {
-          throw new Error(
-            `Dependency "${dependency.path}" should be of type "any" instead of "${dependency.type}".`
-          );
+          throw new Error(`Unmanaged file "${source.path}" cannot be updated.`);
         }
       }
     }

@@ -47,15 +47,10 @@ plugin specifies commands executed while compiling, formatting, linting,
 testing, and source files and dependencies on other source files generated
 during setup.
 
-Only a single plugin can own a particular file, specify its initial content,
-control its serialization, and determine whether or not the file is subject to
-version control. Other plugins can declare this file as an optional or required
-dependency and manipulate it during setup.
-
-The files generated in this way usually do not need to be subject to version
-control. The advantage of **onecmd**'s approach of automatically generated
-configuration files is that the existing editor extensions continue to function
-normally.
+A particular file can be managed only by one plugin, which creates its initial
+content, controls its serialization, and defines whether the file is versionable
+or not. Other plugins can declare this file as an optional or required
+dependency and update it during setup.
 
 A set of coordinated plugins based on standard conventions could serve as a
 basis to allow easy and consistent management of projects together with
@@ -121,39 +116,31 @@ module.exports = [
     ],
     sources: [
       {
-        type: 'string',
-        path: 'path/to/file.txt',
-        versionable: true, // The file should be versioned and visible in the editor.
-        generate: (otherSources) => 'foo',
+        type: 'managed',
+        path: 'path/to/file1',
+        versionable: true,
+        is: (content) => typeof content === 'string',
+        create: (otherSources) => 'foo',
         serialize: (content) => content,
       },
       {
-        type: 'object',
-        path: 'path/to/file.json',
-        generate: (otherSources) => ({foo: 'bar'}),
-        serialize: (content) => JSON.stringify(content),
-      },
-      {
-        type: 'unknown',
-        path: 'path/to/file',
-        editable: true, // The file should be visible in the editor.
+        type: 'unmanaged',
+        path: 'path/to/file2',
+        editable: true,
+        versionable: false,
       },
     ],
     dependencies: [
       {
-        type: 'string',
-        path: 'path/to/file.txt',
-        generate: (content, otherSources) => content + 'bar',
-      },
-      {
-        type: 'object',
-        path: 'path/to/file.json',
-        required: true,
-        generate: (content, otherSources) => ({...content, baz: 'qux'}),
+        type: 'managed',
+        path: 'path/to/file1',
+        required: false,
+        is: (content) => typeof content === 'string',
+        update: (content, otherSources) => content + 'bar',
       },
       {
         type: 'any',
-        path: 'path/to/file',
+        path: 'path/to/file2',
         required: true,
       },
     ],
