@@ -47,14 +47,14 @@ plugin specifies commands executed while compiling, formatting, linting,
 testing, and source files and dependencies on other source files generated
 during setup.
 
-A particular file can be managed only by one plugin, which creates its initial
-content, controls its serialization, and defines whether the file is versionable
-or not. Other plugins can declare this file as an optional or required
-dependency and update it during setup.
+A given file can be declared as a source by only one plugin at a time, which
+creates its initial content, controls its serialization, and defines whether the
+file is versionable or not. Other plugins can declare this file as an optional
+or required dependency and update its content during setup.
 
 A set of coordinated plugins based on standard conventions could serve as a
-basis to allow easy and consistent management of projects together with
-**onecmd**. One such attempt is the package
+foundation for easy and consistent project management with **onecmd**. One such
+attempt is the package
 [`@onecmd/standard-plugins`](https://github.com/clebert/onecmd-standard-plugins).
 
 ### Usage
