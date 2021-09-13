@@ -1,89 +1,68 @@
-import {normalize} from 'path';
-import type {Dependency, Source} from '../types';
+import {posix} from 'path';
+import type {FileAttrs, FileOp} from '../types';
 
-export interface File {
-  readonly filename: string;
+export interface FileBlob {
+  readonly path: string;
   readonly data: string;
 }
 
-export function generateFiles(
-  sources: readonly Source[],
-  dependencies: readonly Dependency[]
-): readonly File[] {
-  sources = sources.map((source) => ({
-    ...source,
-    path: normalize(source.path),
-  }));
+export function generateFiles(ops: readonly FileOp[]): readonly FileBlob[] {
+  const blobs: FileBlob[] = [];
+  const files: {[path: string]: FileAttrs} = {};
 
-  dependencies = dependencies.map((dependency) => ({
-    ...dependency,
-    path: normalize(dependency.path),
-  }));
-
-  const files: File[] = [];
-  const sourcePaths = new Set<string>();
-
-  for (const source of sources) {
-    if (sourcePaths.has(source.path)) {
-      throw new Error(`File "${source.path}" already exists.`);
+  for (const op of ops) {
+    if (posix.isAbsolute(op.path)) {
+      throw new Error(`The path to file "${op.path}" must be relative.`);
     }
 
-    sourcePaths.add(source.path);
-  }
-
-  for (const dependency of dependencies) {
-    if (!sourcePaths.has(dependency.path) && dependency.required) {
-      throw new Error(`Required file "${dependency.path}" does not exist.`);
-    }
-  }
-
-  for (const source of sources) {
-    const otherSources: Record<
-      string,
-      {editable: boolean; versionable: boolean}
-    > = {};
-
-    for (const otherSource of sources) {
-      if (otherSource.path !== source.path) {
-        otherSources[otherSource.path] = {
-          editable:
-            (otherSource.type === 'unmanaged' && otherSource.editable) ?? false,
-
-          versionable: otherSource.versionable ?? false,
-        };
-      }
+    if (op.path !== posix.normalize(op.path)) {
+      throw new Error(`The path to file "${op.path}" must be normalized.`);
     }
 
-    if (source.type === 'managed') {
-      let content = source.create(otherSources);
-
-      for (const dependency of dependencies) {
-        if (dependency.path === source.path && dependency.type !== 'any') {
-          if (!dependency.is(content)) {
-            throw new Error(
-              `Incompatible file "${source.path}" cannot be updated.`
-            );
-          }
-
-          content = dependency.update(content, otherSources);
-        }
-      }
-
-      if (!source.is(content)) {
+    if (op.type === 'new' || op.type === 'ref') {
+      if (files[op.path]) {
         throw new Error(
-          `Malformed file "${source.path}" cannot be serialized.`
+          `The file "${op.path}" can be created or referenced only once.`
         );
       }
 
-      files.push({filename: source.path, data: source.serialize(content)});
-    } else {
-      for (const dependency of dependencies) {
-        if (dependency.path === source.path && dependency.type !== 'any') {
-          throw new Error(`Unmanaged file "${source.path}" cannot be updated.`);
+      files[op.path] = op.attrs ?? {};
+    }
+  }
+
+  for (const op1 of ops) {
+    if (op1.type === 'new') {
+      const {[op1.path]: _, ...otherFiles} = files;
+
+      let content = op1.create(otherFiles);
+
+      for (const op2 of ops) {
+        if (op2.type === 'mod' && op2.path === op1.path) {
+          if (!op2.is(content)) {
+            throw new Error(
+              `The content of file "${op2.path}" is incompatible and cannot be modified.`
+            );
+          }
+
+          content = op2.update(content, otherFiles);
+        }
+      }
+
+      if (!op1.is(content)) {
+        throw new Error(`The content of file "${op1.path}" is malformed.`);
+      }
+
+      blobs.push({path: op1.path, data: op1.serialize(content)});
+    } else if (op1.type === 'ref') {
+      for (const op2 of ops) {
+        if (op2.type === 'mod' && op2.path === op1.path) {
+          throw new Error(
+            `The file "${op2.path}" is only referenced and cannot be modified.`
+          );
         }
       }
     }
   }
 
-  return files;
+  return blobs;
 }

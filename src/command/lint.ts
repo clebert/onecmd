@@ -1,22 +1,29 @@
 import type {Argv} from 'yargs';
-import type {LintCommand, LintOptions} from '../types';
-import {isOptions} from '../util/is-options';
+import type {LintArgs, Plugin, Process} from '../types';
+import {isArgs} from '../util/is-args';
+import {isDefined} from '../util/is-defined';
 import {spawn} from '../util/spawn';
 
 const commandName = 'lint';
 
 export async function lint(
-  commands: readonly LintCommand[],
-  options: {readonly _: unknown[]}
+  plugins: readonly Plugin[],
+  args: {readonly _: readonly unknown[]}
 ): Promise<void> {
-  if (isOptions<LintOptions>(commandName)(options)) {
-    if (commands.length === 0) {
-      throw new Error('There are no commands for linting.');
+  if (isArgs<LintArgs>(commandName)(args)) {
+    const processes: Process[] = [];
+
+    for (const plugin of plugins) {
+      processes.push(...(plugin[commandName]?.(args).filter(isDefined) ?? []));
     }
 
-    await Promise.all(
-      commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
-    );
+    if (processes.length === 0) {
+      throw new Error(
+        `No processes are defined for the ${commandName} command.`
+      );
+    }
+
+    await Promise.all(processes.map(spawn));
   }
 }
 

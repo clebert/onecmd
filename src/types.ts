@@ -1,94 +1,64 @@
 export interface Plugin {
-  readonly commands?: readonly (Command | undefined)[];
-  readonly sources?: readonly (Source | undefined)[];
-  readonly dependencies?: readonly (Dependency | undefined)[];
+  setup?(): readonly (FileOp | undefined)[];
+  compile?(args: CompileArgs): readonly (Process | undefined)[];
+  format?(args: FormatArgs): readonly (Process | undefined)[];
+  lint?(args: LintArgs): readonly (Process | undefined)[];
+  test?(args: TestArgs): readonly (Process | undefined)[];
 }
 
-export type Command = CompileCommand | FmtCommand | LintCommand | TestCommand;
+export type FileOp = NewFile<any> | ModFile<any> | RefFile;
 
-export interface CompileCommand {
-  readonly type: 'compile';
+export interface NewFile<TContent> {
+  readonly type: 'new';
   readonly path: string;
-
-  getArgs?(options: CompileOptions): readonly (string | undefined)[];
-}
-
-export interface CompileOptions {
-  readonly watch: boolean;
-}
-
-export interface FmtCommand {
-  readonly type: 'fmt';
-  readonly path: string;
-
-  getArgs?(options: FmtOptions): readonly (string | undefined)[];
-}
-
-export interface FmtOptions {
-  readonly check: boolean;
-}
-
-export interface LintCommand {
-  readonly type: 'lint';
-  readonly path: string;
-
-  getArgs?(options: LintOptions): readonly (string | undefined)[];
-}
-
-export interface LintOptions {
-  readonly fix: boolean;
-}
-
-export interface TestCommand {
-  readonly type: 'test';
-  readonly path: string;
-
-  getArgs?(options: TestOptions): readonly (string | undefined)[];
-}
-
-export interface TestOptions {
-  readonly watch: boolean;
-}
-
-export type Source = ManagedSource<any> | UnmanagedSource;
-
-export interface ManagedSource<TContent> {
-  readonly type: 'managed';
-  readonly path: string;
-  readonly versionable?: boolean;
+  readonly attrs?: FileAttrs;
 
   is(content: unknown): content is TContent;
-  create(otherSources: Sources): TContent;
+  create(otherFiles: Files): TContent;
   serialize(content: TContent): string;
 }
 
-export interface UnmanagedSource {
-  readonly type: 'unmanaged';
+export interface ModFile<TContent> {
+  readonly type: 'mod';
   readonly path: string;
-  readonly editable?: boolean;
-  readonly versionable?: boolean;
-}
-
-export interface Sources {
-  readonly [path: string]: {
-    readonly editable: boolean;
-    readonly versionable: boolean;
-  };
-}
-
-export type Dependency = AnyDependency | ManagedDependency<any>;
-
-export interface AnyDependency {
-  readonly type: 'any';
-  readonly path: string;
-  readonly required: true;
-}
-
-export interface ManagedDependency<TContent> {
-  readonly type: 'managed';
-  readonly path: string;
-  readonly required?: boolean;
 
   is(content: unknown): content is TContent;
-  update(content: TContent, otherSources: Sources): TContent;
+  update(content: TContent, otherFiles: Files): TContent;
+}
+
+export interface RefFile {
+  readonly type: 'ref';
+  readonly path: string;
+  readonly attrs?: FileAttrs;
+}
+
+export interface Files {
+  readonly [path: string]: FileAttrs;
+}
+
+export interface FileAttrs {
+  readonly pretty?: boolean;
+  readonly versioned?: boolean;
+  readonly visible?: boolean;
+}
+
+export interface CompileArgs {
+  readonly watch: boolean;
+}
+
+export interface FormatArgs {
+  readonly check: boolean;
+}
+
+export interface LintArgs {
+  readonly fix: boolean;
+}
+
+export interface TestArgs {
+  readonly watch: boolean;
+}
+
+export interface Process {
+  readonly command: string;
+  readonly args?: readonly (string | undefined)[];
 }

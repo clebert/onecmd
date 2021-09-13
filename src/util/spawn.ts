@@ -1,15 +1,12 @@
 import {spawn as spawnAsync} from 'child_process';
-import {normalize} from 'path';
+import type {Process} from '../types';
 import {isDefined} from './is-defined';
 
-export async function spawn(
-  path: string,
-  args: readonly (string | undefined)[] | undefined
-): Promise<void> {
+export async function spawn(process: Process): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const childProcess = spawnAsync(
-      path,
-      args?.filter(isDefined).filter(Boolean) ?? [],
+      process.command,
+      process.args?.filter(isDefined).filter(Boolean) ?? [],
       {stdio: 'inherit'}
     );
 
@@ -19,7 +16,9 @@ export async function spawn(
       } else {
         reject(
           new Error(
-            `Process ${JSON.stringify(normalize(path))} has terminated with ${
+            `The process ${JSON.stringify(
+              process.command
+            )} has terminated with ${
               code ? `code ${code}` : `signal ${signal}`
             }.`
           )

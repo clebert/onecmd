@@ -1,22 +1,29 @@
 import type {Argv} from 'yargs';
-import type {CompileCommand, CompileOptions} from '../types';
-import {isOptions} from '../util/is-options';
+import type {CompileArgs, Plugin, Process} from '../types';
+import {isArgs} from '../util/is-args';
+import {isDefined} from '../util/is-defined';
 import {spawn} from '../util/spawn';
 
 const commandName = 'compile';
 
 export async function compile(
-  commands: readonly CompileCommand[],
-  options: {readonly _: unknown[]}
+  plugins: readonly Plugin[],
+  args: {readonly _: readonly unknown[]}
 ): Promise<void> {
-  if (isOptions<CompileOptions>(commandName)(options)) {
-    if (commands.length === 0) {
-      throw new Error('There are no commands for compiling.');
+  if (isArgs<CompileArgs>(commandName)(args)) {
+    const processes: Process[] = [];
+
+    for (const plugin of plugins) {
+      processes.push(...(plugin[commandName]?.(args).filter(isDefined) ?? []));
     }
 
-    await Promise.all(
-      commands.map(async ({path, getArgs}) => spawn(path, getArgs?.(options)))
-    );
+    if (processes.length === 0) {
+      throw new Error(
+        `No processes are defined for the ${commandName} command.`
+      );
+    }
+
+    await Promise.all(processes.map(spawn));
   }
 }
 

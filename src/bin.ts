@@ -4,27 +4,17 @@ import {resolve} from 'path';
 import compose from 'compose-function';
 import yargs from 'yargs';
 import {compile} from './command/compile';
-import {fmt} from './command/fmt';
+import {format} from './command/format';
 import {lint} from './command/lint';
 import {setup} from './command/setup';
 import {test} from './command/test';
-import type {
-  Command,
-  Source,
-  Dependency,
-  CompileCommand,
-  FmtCommand,
-  LintCommand,
-  TestCommand,
-} from './types';
-import {isCommand} from './util/is-command';
-import {isDefined} from './util/is-defined';
+import type {Plugin} from './types';
 
 (async () => {
-  const options = compose(
+  const args = compose(
     test.describe,
     lint.describe,
-    fmt.describe,
+    format.describe,
     compile.describe,
     setup.describe
   )(
@@ -38,23 +28,15 @@ import {isDefined} from './util/is-defined';
         'One command to setup, compile, format, lint, and test them all.'
       )
       .strict()
-  ).argv as {readonly _: unknown[]};
+  ).argv as {readonly _: readonly unknown[]};
 
-  const commands: Command[] = [];
-  const sources: Source[] = [];
-  const dependencies: Dependency[] = [];
+  const plugins = require(resolve('./onecmd.js')) as readonly Plugin[];
 
-  for (const plugin of require(resolve('./onecmd.js'))) {
-    commands.push(...(plugin.commands ?? []).filter(isDefined));
-    sources.push(...(plugin.sources ?? []).filter(isDefined));
-    dependencies.push(...(plugin.dependencies ?? []).filter(isDefined));
-  }
-
-  await setup(sources, dependencies, options);
-  await compile(commands.filter(isCommand<CompileCommand>('compile')), options);
-  await fmt(commands.filter(isCommand<FmtCommand>('fmt')), options);
-  await lint(commands.filter(isCommand<LintCommand>('lint')), options);
-  await test(commands.filter(isCommand<TestCommand>('test')), options);
+  await setup(plugins, args);
+  await compile(plugins, args);
+  await format(plugins, args);
+  await lint(plugins, args);
+  await test(plugins, args);
 })().catch((error) => {
   if (error instanceof Error && error.message) {
     console.error(error.message);

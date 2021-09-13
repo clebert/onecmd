@@ -6,199 +6,119 @@ const isString = (content: unknown): content is string =>
 const isNumber = (content: unknown): content is number =>
   typeof content === 'number';
 
-const serializeString = (content: string) => content.toUpperCase();
+const serialize = (content: string) => content.toUpperCase();
 
 describe('generateFiles()', () => {
-  test('several sources and dependencies', () => {
-    const createA = jest.fn(() => 'a1');
-    const updateA = jest.fn((content: string) => content + 'a2');
-    const createB = jest.fn(() => 'b1');
-    const updateB = jest.fn((content: string) => content + 'b2');
-    const updateE = jest.fn();
-
-    const files = generateFiles(
-      [
-        {
-          type: 'managed',
-          path: 'a',
-          versionable: true,
-          is: isString,
-          create: createA,
-          serialize: serializeString,
-        },
-        {
-          type: 'managed',
-          path: './b',
-          is: isString,
-          create: createB,
-          serialize: serializeString,
-        },
-        {type: 'unmanaged', path: './c', versionable: true},
-        {type: 'unmanaged', path: './d', editable: true},
-      ],
-      [
-        {type: 'any', path: './a', required: true},
-        {type: 'any', path: 'b', required: true},
-        {type: 'any', path: './c', required: true},
-        {type: 'any', path: './d', required: true},
-        {
-          type: 'managed',
-          path: './a',
-          required: true,
-          is: isString,
-          update: updateA,
-        },
-        {
-          type: 'managed',
-          path: 'b',
-          required: true,
-          is: isString,
-          update: updateB,
-        },
-        {type: 'managed', path: './e', is: isString, update: updateE},
-      ]
+  test('file paths', () => {
+    expect(() => generateFiles([{type: 'ref', path: '/path/to/a'}])).toThrow(
+      new Error('The path to file "/path/to/a" must be relative.')
     );
 
-    expect(files).toEqual([
-      {filename: 'a', data: 'A1A2'},
-      {filename: 'b', data: 'B1B2'},
+    expect(() => generateFiles([{type: 'ref', path: './path/to/a'}])).toThrow(
+      new Error('The path to file "./path/to/a" must be normalized.')
+    );
+
+    expect(() => generateFiles([{type: 'ref', path: 'path/to/../a'}])).toThrow(
+      new Error('The path to file "path/to/../a" must be normalized.')
+    );
+
+    expect(() => generateFiles([{type: 'ref', path: ''}])).toThrow(
+      new Error('The path to file "" must be normalized.')
+    );
+
+    expect(() =>
+      generateFiles([{type: 'ref', path: 'path/to/a'}])
+    ).not.toThrow();
+
+    expect(() =>
+      generateFiles([{type: 'ref', path: '../path/to/a'}])
+    ).not.toThrow();
+  });
+
+  test('file ops', () => {
+    const createA = jest.fn(() => 'a1');
+    const createB = jest.fn(() => 'b1');
+    const updateA = jest.fn((content: string) => content + 'a2');
+    const updateB = jest.fn((content: string) => content + 'b2');
+    const updateC = jest.fn();
+    const is = isString;
+    const pretty = {attrs: {pretty: true}};
+    const versioned = {attrs: {versioned: true}};
+    const visible = {attrs: {visible: true}};
+
+    const blobs = generateFiles([
+      {type: 'mod', path: 'a', is, update: updateA},
+      {type: 'mod', path: 'b', is, update: updateB},
+      {type: 'mod', path: 'c', is, update: updateC},
+      {type: 'new', path: 'a', is, serialize, create: createA, ...pretty},
+      {type: 'new', path: 'b', is, serialize, create: createB, ...versioned},
+      {type: 'ref', path: 'd', ...visible},
+      {type: 'ref', path: 'e'},
+    ]);
+
+    expect(blobs).toEqual([
+      {path: 'a', data: 'A1A2'},
+      {path: 'b', data: 'B1B2'},
     ]);
 
     expect(createA.mock.calls).toEqual([
-      [
-        {
-          b: {editable: false, versionable: false},
-          c: {editable: false, versionable: true},
-          d: {editable: true, versionable: false},
-        },
-      ],
-    ]);
-
-    expect(updateA.mock.calls).toEqual([
-      [
-        'a1',
-        {
-          b: {editable: false, versionable: false},
-          c: {editable: false, versionable: true},
-          d: {editable: true, versionable: false},
-        },
-      ],
+      [{b: versioned.attrs, d: visible.attrs, e: {}}],
     ]);
 
     expect(createB.mock.calls).toEqual([
-      [
-        {
-          a: {editable: false, versionable: true},
-          c: {editable: false, versionable: true},
-          d: {editable: true, versionable: false},
-        },
-      ],
+      [{a: pretty.attrs, d: visible.attrs, e: {}}],
+    ]);
+
+    expect(updateA.mock.calls).toEqual([
+      ['a1', {b: versioned.attrs, d: visible.attrs, e: {}}],
     ]);
 
     expect(updateB.mock.calls).toEqual([
-      [
-        'b1',
-        {
-          a: {editable: false, versionable: true},
-          c: {editable: false, versionable: true},
-          d: {editable: true, versionable: false},
-        },
-      ],
+      ['b1', {a: pretty.attrs, d: visible.attrs, e: {}}],
     ]);
 
-    expect(updateE.mock.calls).toEqual([]);
+    expect(updateC.mock.calls).toEqual([]);
   });
 
-  test('duplicate sources', () => {
-    const sources = [
-      {
-        type: 'managed',
-        path: './a',
-        versionable: true,
-        is: isString,
-        create: () => '',
-        serialize: serializeString,
-      },
-      {
-        type: 'managed',
-        path: 'a',
-        versionable: true,
-        is: isString,
-        create: () => '',
-        serialize: serializeString,
-      },
-      {type: 'unmanaged', path: './a'},
-      {type: 'unmanaged', path: 'a'},
+  test('conflicting file ops', () => {
+    const files = [
+      {type: 'new', path: 'a', is: isString, serialize, create: () => ''},
+      {type: 'ref', path: 'a'},
     ] as const;
 
-    for (const source1 of sources) {
-      for (const source2 of sources) {
-        expect(() => generateFiles([source1, source2], [])).toThrow(
-          new Error('File "a" already exists.')
+    for (const file1 of files) {
+      for (const file2 of files) {
+        expect(() => generateFiles([file1, file2])).toThrow(
+          new Error('The file "a" can be created or referenced only once.')
         );
       }
     }
-  });
-
-  test('non-existing dependencies', () => {
-    expect(() =>
-      generateFiles([], [{type: 'any', path: './a', required: true}])
-    ).toThrow(new Error('Required file "a" does not exist.'));
 
     expect(() =>
-      generateFiles(
-        [],
-        [
-          {
-            type: 'managed',
-            path: './a',
-            required: true,
-            is: isString,
-            update: () => '',
-          },
-        ]
+      generateFiles([
+        {type: 'ref', path: 'a'},
+        {type: 'mod', path: 'a', is: isString, update: () => ''},
+      ])
+    ).toThrow(
+      new Error('The file "a" is only referenced and cannot be modified.')
+    );
+
+    expect(() =>
+      generateFiles([
+        {type: 'new', path: 'a', is: isString, serialize, create: () => ''},
+        {type: 'mod', path: 'a', is: isNumber, update: () => 0},
+      ])
+    ).toThrow(
+      new Error(
+        'The content of file "a" is incompatible and cannot be modified.'
       )
-    ).toThrow(new Error('Required file "a" does not exist.'));
-  });
-
-  test('incompatible dependencies', () => {
-    expect(() =>
-      generateFiles(
-        [{type: 'unmanaged', path: './a'}],
-        [{type: 'managed', path: 'a', is: isString, update: () => ''}]
-      )
-    ).toThrow(new Error('Unmanaged file "a" cannot be updated.'));
+    );
 
     expect(() =>
-      generateFiles(
-        [
-          {
-            type: 'managed',
-            path: './a',
-            versionable: true,
-            is: isString,
-            create: () => '',
-            serialize: serializeString,
-          },
-        ],
-        [{type: 'managed', path: 'a', is: isNumber, update: () => 0}]
-      )
-    ).toThrow(new Error('Incompatible file "a" cannot be updated.'));
-
-    expect(() =>
-      generateFiles(
-        [
-          {
-            type: 'managed',
-            path: './a',
-            versionable: true,
-            is: isString,
-            create: () => '',
-            serialize: serializeString,
-          },
-        ],
-        [{type: 'managed', path: 'a', is: isString, update: () => 0}]
-      )
-    ).toThrow(new Error('Malformed file "a" cannot be serialized.'));
+      generateFiles([
+        {type: 'new', path: 'a', is: isString, serialize, create: () => ''},
+        {type: 'mod', path: 'a', is: isString, update: () => 0},
+      ])
+    ).toThrow(new Error('The content of file "a" is malformed.'));
   });
 });
