@@ -11,9 +11,9 @@
   },
   "license": "MIT",
   "author": "Clemens Akens",
-  "types": "./lib/cjs/types.d.ts",
+  "types": "lib/cjs/types.d.ts",
   "bin": {
-    "onecmd": "./lib/cjs/bin.js"
+    "onecmd": "lib/cjs/bin.js"
   },
   "files": [
     "lib"
@@ -23,8 +23,8 @@
     "ci": "run-p compile format:check lint test",
     "compile": "onecmd compile",
     "postcompile": "chmod +x lib/cjs/bin.js",
-    "format": "onecmd fmt",
-    "format:check": "onecmd fmt --check",
+    "format": "onecmd format",
+    "format:check": "onecmd format --check",
     "lint": "onecmd lint",
     "release": "npm version",
     "postrelease": "git push --follow-tags",
@@ -37,7 +37,7 @@
     "yargs": "^17.1.1"
   },
   "devDependencies": {
-    "@onecmd/standard-plugins": "^0.9.0",
+    "@onecmd/standard-plugins": "^0.11.0",
     "@types/compose-function": "^0.0.30",
     "@types/mkdirp": "^1.0.2",
     "@types/node": "^16.7.13",

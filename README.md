@@ -56,6 +56,7 @@ project management with **onecmd**. One such attempt is the package
 // @ts-check
 
 const std = require('@onecmd/standard-plugins');
+const nodeVersion = '16';
 
 /** @type {readonly import('onecmd').Plugin[]} */
 const plugins = [
@@ -63,8 +64,9 @@ const plugins = [
   std.editorconfig(),
   std.eslint(),
   std.git(),
+  std.github({nodeVersion}),
   std.jest({coverage: true}),
-  std.node('16'),
+  std.node(nodeVersion),
   std.npm(),
   std.prettier(),
   std.typescript('node', 'package'),
