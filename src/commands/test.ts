@@ -1,16 +1,16 @@
 import type {Argv} from 'yargs';
-import type {LintArgs, Plugin, Process} from '../types';
-import {isArgs} from '../util/is-args';
-import {isDefined} from '../util/is-defined';
-import {spawn} from '../util/spawn';
+import type {Plugin, Process, TestArgs} from '../types';
+import {isArgs} from '../utils/is-args';
+import {isDefined} from '../utils/is-defined';
+import {spawn} from '../utils/spawn';
 
-const commandName = 'lint';
+const commandName = 'test';
 
-export async function lint(
+export async function test(
   plugins: readonly Plugin[],
   args: {readonly _: readonly unknown[]}
 ): Promise<void> {
-  if (isArgs<LintArgs>(commandName)(args)) {
+  if (isArgs<TestArgs>(commandName)(args)) {
     const processes: Process[] = [];
 
     for (const plugin of plugins) {
@@ -27,13 +27,13 @@ export async function lint(
   }
 }
 
-lint.describe = (argv: Argv) =>
+test.describe = (argv: Argv) =>
   argv.command(`${commandName} [options]`, '', (command) =>
     command
-      .describe('fix', '')
-      .boolean('fix')
-      .default('fix', false)
+      .describe('watch', '')
+      .boolean('watch')
+      .default('watch', false)
 
       .example(`$0 ${commandName}`, '')
-      .example(`$0 ${commandName} --fix`, '')
+      .example(`$0 ${commandName} --watch`, '')
   );

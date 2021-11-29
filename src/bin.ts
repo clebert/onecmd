@@ -3,11 +3,11 @@
 import {resolve} from 'path';
 import compose from 'compose-function';
 import yargs from 'yargs';
-import {compile} from './command/compile';
-import {format} from './command/format';
-import {lint} from './command/lint';
-import {setup} from './command/setup';
-import {test} from './command/test';
+import {compile} from './commands/compile';
+import {format} from './commands/format';
+import {lint} from './commands/lint';
+import {setup} from './commands/setup';
+import {test} from './commands/test';
 import type {Plugin} from './types';
 
 (async () => {

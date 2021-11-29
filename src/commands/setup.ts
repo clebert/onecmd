@@ -3,9 +3,9 @@ import {dirname} from 'path';
 import mkdir from 'mkdirp';
 import type {Argv} from 'yargs';
 import type {FileOp, Plugin} from '../types';
-import {generateFiles} from '../util/generate-files';
-import {isArgs} from '../util/is-args';
-import {isDefined} from '../util/is-defined';
+import {generateFiles} from '../utils/generate-files';
+import {isArgs} from '../utils/is-args';
+import {isDefined} from '../utils/is-defined';
 
 const commandName = 'setup';
 

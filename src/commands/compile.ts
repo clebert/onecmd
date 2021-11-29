@@ -1,16 +1,16 @@
 import type {Argv} from 'yargs';
-import type {FormatArgs, Plugin, Process} from '../types';
-import {isArgs} from '../util/is-args';
-import {isDefined} from '../util/is-defined';
-import {spawn} from '../util/spawn';
+import type {CompileArgs, Plugin, Process} from '../types';
+import {isArgs} from '../utils/is-args';
+import {isDefined} from '../utils/is-defined';
+import {spawn} from '../utils/spawn';
 
-const commandName = 'format';
+const commandName = 'compile';
 
-export async function format(
+export async function compile(
   plugins: readonly Plugin[],
   args: {readonly _: readonly unknown[]}
 ): Promise<void> {
-  if (isArgs<FormatArgs>(commandName)(args)) {
+  if (isArgs<CompileArgs>(commandName)(args)) {
     const processes: Process[] = [];
 
     for (const plugin of plugins) {
@@ -27,13 +27,13 @@ export async function format(
   }
 }
 
-format.describe = (argv: Argv) =>
+compile.describe = (argv: Argv) =>
   argv.command(`${commandName} [options]`, '', (command) =>
     command
-      .describe('check', '')
-      .boolean('check')
-      .default('check', false)
+      .describe('watch', '')
+      .boolean('watch')
+      .default('watch', false)
 
       .example(`$0 ${commandName}`, '')
-      .example(`$0 ${commandName} --check`, '')
+      .example(`$0 ${commandName} --watch`, '')
   );
