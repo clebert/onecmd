@@ -7,25 +7,25 @@ export async function spawn(process: Process): Promise<void> {
     const childProcess = spawnAsync(
       process.command,
       process.args?.filter(isDefined).filter(Boolean) ?? [],
-      {stdio: 'inherit'}
+      {stdio: `inherit`},
     );
 
-    childProcess.once('close', (code, signal) => {
+    childProcess.once(`close`, (code, signal) => {
       if (code === 0) {
         resolve();
       } else {
         reject(
           new Error(
             `The process ${JSON.stringify(
-              process.command
+              process.command,
             )} has terminated with ${
               code ? `code ${code}` : `signal ${signal}`
-            }.`
-          )
+            }.`,
+          ),
         );
       }
     });
 
-    childProcess.once('error', reject);
+    childProcess.once(`error`, reject);
   });
 }

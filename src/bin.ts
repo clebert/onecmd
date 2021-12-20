@@ -16,21 +16,21 @@ import type {Plugin} from './types';
     lint.describe,
     format.describe,
     compile.describe,
-    setup.describe
+    setup.describe,
   )(
     yargs
-      .usage('Usage: $0 <command> [options]')
-      .help('h')
-      .alias('h', 'help')
+      .usage(`Usage: $0 <command> [options]`)
+      .help(`h`)
+      .alias(`h`, `help`)
       .detectLocale(false)
       .demandCommand(1, 1)
       .epilogue(
-        'One command to setup, compile, format, lint, and test them all.'
+        `One command to setup, compile, format, lint, and test them all.`,
       )
-      .strict()
+      .strict(),
   ).argv as {readonly _: readonly unknown[]};
 
-  const plugins = require(resolve('./onecmd.js')) as readonly Plugin[];
+  const plugins = require(resolve(`./onecmd.js`)) as readonly Plugin[];
 
   await setup(plugins, args);
   await compile(plugins, args);

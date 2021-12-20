@@ -4,11 +4,11 @@ import {isArgs} from '../utils/is-args';
 import {isDefined} from '../utils/is-defined';
 import {spawn} from '../utils/spawn';
 
-const commandName = 'compile';
+const commandName = `compile`;
 
 export async function compile(
   plugins: readonly Plugin[],
-  args: {readonly _: readonly unknown[]}
+  args: {readonly _: readonly unknown[]},
 ): Promise<void> {
   if (isArgs<CompileArgs>(commandName)(args)) {
     const processes: Process[] = [];
@@ -19,7 +19,7 @@ export async function compile(
 
     if (processes.length === 0) {
       throw new Error(
-        `No processes are defined for the ${commandName} command.`
+        `No processes are defined for the ${commandName} command.`,
       );
     }
 
@@ -28,12 +28,12 @@ export async function compile(
 }
 
 compile.describe = (argv: Argv) =>
-  argv.command(`${commandName} [options]`, '', (command) =>
+  argv.command(`${commandName} [options]`, ``, (command) =>
     command
-      .describe('watch', '')
-      .boolean('watch')
-      .default('watch', false)
+      .describe(`watch`, ``)
+      .boolean(`watch`)
+      .default(`watch`, false)
 
-      .example(`$0 ${commandName}`, '')
-      .example(`$0 ${commandName} --watch`, '')
+      .example(`$0 ${commandName}`, ``)
+      .example(`$0 ${commandName} --watch`, ``),
   );

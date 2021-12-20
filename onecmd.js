@@ -1,7 +1,7 @@
 // @ts-check
 
-const std = require('@onecmd/standard-plugins');
-const nodeVersion = '16';
+const std = require(`@onecmd/standard-plugins`);
+const nodeVersion = `16`;
 
 /** @type {readonly import('onecmd').Plugin[]} */
 const plugins = [
@@ -14,7 +14,7 @@ const plugins = [
   std.npm(),
   std.prettier(),
   std.swc(),
-  std.typescript('node', 'package'),
+  std.typescript(`node`, `package`),
   std.vscode({showFilesInEditor: false}),
 ];
 

@@ -7,11 +7,11 @@ import {generateFiles} from '../utils/generate-files';
 import {isArgs} from '../utils/is-args';
 import {isDefined} from '../utils/is-defined';
 
-const commandName = 'setup';
+const commandName = `setup`;
 
 export async function setup(
   plugins: readonly Plugin[],
-  args: {readonly _: readonly unknown[]}
+  args: {readonly _: readonly unknown[]},
 ): Promise<void> {
   if (isArgs(commandName)(args)) {
     const ops: FileOp[] = [];
@@ -22,12 +22,12 @@ export async function setup(
 
     for (const {path, data} of generateFiles(ops)) {
       await mkdir(dirname(path));
-      await writeFile(path, data, {encoding: 'utf-8'});
+      await writeFile(path, data, {encoding: `utf-8`});
     }
   }
 }
 
 setup.describe = (argv: Argv) =>
-  argv.command(`${commandName} [options]`, '', (command) =>
-    command.example(`$0 ${commandName}`, '')
+  argv.command(`${commandName} [options]`, ``, (command) =>
+    command.example(`$0 ${commandName}`, ``),
   );

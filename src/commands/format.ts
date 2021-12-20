@@ -4,11 +4,11 @@ import {isArgs} from '../utils/is-args';
 import {isDefined} from '../utils/is-defined';
 import {spawn} from '../utils/spawn';
 
-const commandName = 'format';
+const commandName = `format`;
 
 export async function format(
   plugins: readonly Plugin[],
-  args: {readonly _: readonly unknown[]}
+  args: {readonly _: readonly unknown[]},
 ): Promise<void> {
   if (isArgs<FormatArgs>(commandName)(args)) {
     const processes: Process[] = [];
@@ -19,7 +19,7 @@ export async function format(
 
     if (processes.length === 0) {
       throw new Error(
-        `No processes are defined for the ${commandName} command.`
+        `No processes are defined for the ${commandName} command.`,
       );
     }
 
@@ -28,12 +28,12 @@ export async function format(
 }
 
 format.describe = (argv: Argv) =>
-  argv.command(`${commandName} [options]`, '', (command) =>
+  argv.command(`${commandName} [options]`, ``, (command) =>
     command
-      .describe('check', '')
-      .boolean('check')
-      .default('check', false)
+      .describe(`check`, ``)
+      .boolean(`check`)
+      .default(`check`, false)
 
-      .example(`$0 ${commandName}`, '')
-      .example(`$0 ${commandName} --check`, '')
+      .example(`$0 ${commandName}`, ``)
+      .example(`$0 ${commandName} --check`, ``),
   );

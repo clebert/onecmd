@@ -1,5 +1,5 @@
 export function isArgs<TArgs>(
-  commandName: string
+  commandName: string,
 ): (args: {
   readonly _: readonly unknown[];
 }) => args is TArgs & {readonly _: [string]} {

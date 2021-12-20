@@ -19,10 +19,10 @@ export function generateFiles(ops: readonly FileOp[]): readonly FileBlob[] {
       throw new Error(`The path to file "${op.path}" must be normalized.`);
     }
 
-    if (op.type === 'new' || op.type === 'ref') {
+    if (op.type === `new` || op.type === `ref`) {
       if (files[op.path]) {
         throw new Error(
-          `The file "${op.path}" can be created or referenced only once.`
+          `The file "${op.path}" can be created or referenced only once.`,
         );
       }
 
@@ -31,16 +31,16 @@ export function generateFiles(ops: readonly FileOp[]): readonly FileBlob[] {
   }
 
   for (const op1 of ops) {
-    if (op1.type === 'new') {
+    if (op1.type === `new`) {
       const {[op1.path]: _, ...otherFiles} = files;
 
       let content = op1.create(otherFiles);
 
       for (const op2 of ops) {
-        if (op2.type === 'mod' && op2.path === op1.path) {
+        if (op2.type === `mod` && op2.path === op1.path) {
           if (!op2.is(content)) {
             throw new Error(
-              `The content of file "${op2.path}" is incompatible and cannot be modified.`
+              `The content of file "${op2.path}" is incompatible and cannot be modified.`,
             );
           }
 
@@ -53,11 +53,11 @@ export function generateFiles(ops: readonly FileOp[]): readonly FileBlob[] {
       }
 
       blobs.push({path: op1.path, data: op1.serialize(content)});
-    } else if (op1.type === 'ref') {
+    } else if (op1.type === `ref`) {
       for (const op2 of ops) {
-        if (op2.type === 'mod' && op2.path === op1.path) {
+        if (op2.type === `mod` && op2.path === op1.path) {
           throw new Error(
-            `The file "${op2.path}" is only referenced and cannot be modified.`
+            `The file "${op2.path}" is only referenced and cannot be modified.`,
           );
         }
       }

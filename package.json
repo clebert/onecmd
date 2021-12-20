@@ -34,10 +34,10 @@
   "dependencies": {
     "compose-function": "^3.0.3",
     "mkdirp": "^1.0.4",
-    "yargs": "^17.2.1"
+    "yargs": "^17.3.0"
   },
   "devDependencies": {
-    "@onecmd/standard-plugins": "^0.13.1",
+    "@onecmd/standard-plugins": "^0.17.0",
     "@types/compose-function": "^0.0.30",
     "@types/mkdirp": "^1.0.2",
     "@types/node": "^16.11.10",
